@@ -14,7 +14,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.technipixl.evand.evandfinal.model.MovieResult
 import com.technipixl.evand.evandfinal.ui.theme.EvandFinalTheme
-import androidx.compose.material.BottomNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,12 +26,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-
 @Composable
-fun Header(currentScreen: NavRoutes, currentSearch: (String) -> Unit, backClick: () -> Unit){
+fun Header(currentScreen: NavRoutes, backOnClick: () -> Unit){
     when(currentScreen){
         NavRoutes.PopularMovie -> PopularHeader()
+        NavRoutes.DetailsMovie -> DetailBackHeader(backOnClick)
     }
 }
 
@@ -46,6 +44,11 @@ fun MovieApp(modifier: Modifier = Modifier) {
     }
 
     Scaffold(
+        topBar = {
+                 Header(screen) {
+                     navController.popBackStack()
+                 }
+        },
         bottomBar = {
             BottomNavigation(
                 selected = currentScreen,
@@ -81,8 +84,17 @@ fun MovieApp(modifier: Modifier = Modifier) {
             }
 
             composable(route = NavRoutes.DetailsMovie.name) {
-
-                DetailsMovie()
+                DetailsMovie(onClick = {  movie ->
+                    selectedMovie = movie
+                    navController.navigate(NavRoutes.DetailsMovie.name) {
+                        popUpTo(NavRoutes.DetailsMovie.name) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                    movie = selectedMovie!!)
                 screen = NavRoutes.DetailsMovie
             }
         }

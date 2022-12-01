@@ -16,7 +16,6 @@ class PopularViewModel: BaseViewModel() {
 
     override suspend fun getMovies() {
         val result = service.getTrendingMovies(service.APIKEY, 1)
-        Log.d("film", "$result")
         movies.emit(result)
     }
 }
