@@ -3,41 +3,100 @@ package com.technipixl.evand.evandfinal
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.technipixl.evand.evandfinal.model.MovieResult
 import com.technipixl.evand.evandfinal.ui.theme.EvandFinalTheme
+import androidx.compose.material.BottomNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            EvandFinalTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Greeting("Android")
-                }
+            EvandFinalTheme() {
+                MovieApp()
             }
         }
     }
 }
 
+
+
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
+fun Header(currentScreen: NavRoutes, currentSearch: (String) -> Unit, backClick: () -> Unit){
+    when(currentScreen){
+        NavRoutes.PopularMovie -> PopularHeader()
+    }
 }
+
+@Composable
+fun MovieApp(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = backStackEntry?.destination?.route ?: NavRoutes.SearchMovie.name
+    var screen by remember {
+        mutableStateOf(NavRoutes.SearchMovie)
+    }
+
+    Scaffold(
+        bottomBar = {
+            BottomNavigation(
+                selected = currentScreen,
+                navigationChanged = { navController.navigate(it) }
+            )
+        }) { innerPadding ->
+
+        var selectedMovie by remember { mutableStateOf<MovieResult.Movie?>(null) }
+
+        NavHost(
+            navController = navController,
+            startDestination = NavRoutes.SearchMovie.name,
+            modifier = modifier.padding(innerPadding)
+        ) {
+            composable(route = NavRoutes.SearchMovie.name) {
+                SearchMovie()
+                screen = NavRoutes.SearchMovie
+            }
+
+            composable(route = NavRoutes.PopularMovie.name) {
+
+                PopularMovie(onClick = { movie ->
+                    selectedMovie = movie
+                    navController.navigate(NavRoutes.DetailsMovie.name) {
+                        popUpTo(NavRoutes.DetailsMovie.name) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
+                screen = NavRoutes.PopularMovie
+            }
+
+            composable(route = NavRoutes.DetailsMovie.name) {
+
+                DetailsMovie()
+                screen = NavRoutes.DetailsMovie
+            }
+        }
+    }
+}
+
+
+
+
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     EvandFinalTheme {
-        Greeting("Android")
+        MovieApp()
     }
 }
