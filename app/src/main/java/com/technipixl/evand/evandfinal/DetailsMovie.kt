@@ -96,7 +96,7 @@ fun TitleRow(
 
             ) {
                 Image(
-                    painter = rememberAsyncImagePainter("${posterPath}"),
+                    painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500/${posterPath}"),
                     contentDescription = null,
                     contentScale = ContentScale.FillHeight
                 )
